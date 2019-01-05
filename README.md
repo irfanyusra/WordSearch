@@ -1,1 +1,1 @@
-# words
+# Word Search Game in Haskell

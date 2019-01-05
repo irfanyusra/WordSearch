@@ -1,4 +1,5 @@
 --Word Search Game
+--Yusra Irfan
 
 module Main where 
     import Lib

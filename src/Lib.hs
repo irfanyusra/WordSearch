@@ -13,8 +13,12 @@ module Lib
     , gridWithCoords
     , cell2char
     , Cell (Cell,Indent)
-    , Game (Game)
+    , Game (gameGrid, gameWords)
     , makeGame
+    , totalWords
+    , score
+    , playGame
+    , formatGame
     ) where 
 
 import Data.List (isInfixOf, transpose)
@@ -23,7 +27,10 @@ import qualified Data.Map as M
 
 
 type Grid a = [[a]]
-data Game = Game (Grid Cell) (M.Map String (Maybe [Cell]))
+data Game = Game {
+                gameGrid :: Grid Cell,
+                gameWords :: M.Map String (Maybe [Cell])
+                }
             deriving Show
 
 data Cell = Cell (Integer, Integer) Char 
@@ -33,10 +40,28 @@ data Cell = Cell (Integer, Integer) Char
 makeGame :: Grid Char -> [String] -> Game 
 makeGame grid words = 
     let gwc = gridWithCoords grid 
-        dict = M.empty 
+        tuplify word = (word, Nothing)
+        list = map tuplify words
+        dict = M.fromList  list 
     in Game gwc dict 
 
+totalWords :: Game -> Int
+totalWords game = length . M.keys $ gameWords game
 
+score :: Game -> Int
+score game = length . catMaybes . M.elems $ gameWords game
+
+playGame :: Game -> String -> Game
+playGame game word =
+    let grid = gameGrid game
+    foundWord = findWord grid word
+    newGame = case foundWord of 
+        Nothing -> game
+        Just cs -> 
+            let dict = gameWords game
+                newDict = M.insert word foundWord dict
+            in Game grid newDict
+    in newGame
 
 zipOverGrid :: Grid a -> Grid b -> Grid (a,b)
 zipOverGrid = zipWith zip
